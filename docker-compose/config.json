@@ -1,0 +1,12 @@
+{
+  "devices": [
+    {
+      "name": "Fridge",
+      "ip_address": "192.168.50.50"
+    },
+    {
+      "name": "Gas Boiler",
+      "ip_address":  "192.168.50.51"
+    }
+  ]
+}

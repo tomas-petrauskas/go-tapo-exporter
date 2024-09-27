@@ -1,0 +1,7 @@
+# scrape tapo-smart-plug devices
+scrape_configs:
+  - job_name: 'tapo scrape'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['go-tapo-exporter:8086']
