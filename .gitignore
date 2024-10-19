@@ -5,3 +5,4 @@
 /.idea/vcs.xml
 /.idea/workspace.xml
 /config/tapo.env
+/config/tapo.json
