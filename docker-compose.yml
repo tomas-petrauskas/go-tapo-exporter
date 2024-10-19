@@ -1,0 +1,27 @@
+services:
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: power_prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    expose:
+      - 9090
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: unless-stopped
+
+  exporter:
+    image: tess1o/go-tapo-exporter:latest-arm64
+    build:
+      context: .
+    container_name: power_exporter
+    volumes:
+      - ./config/tapo.json:/app/config.json:ro
+    ports:
+      - 8086:8086
+    env_file: config/tapo.env
+
+volumes:
+  prometheus_data:

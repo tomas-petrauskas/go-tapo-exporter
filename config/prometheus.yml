@@ -2,6 +2,6 @@
 scrape_configs:
   - job_name: 'tapo scrape'
     metrics_path: '/metrics'
-    scrape_interval: 15s
+    scrape_interval: 3s
     static_configs:
-      - targets: ['go-tapo-exporter:8086']
+      - targets: ['power_exporter:8086']

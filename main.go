@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"github.com/tess1o/go-tapo/api/types"
-	"github.com/tess1o/go-tapo/pkg/tapogo"
 	"io"
 	"log/slog"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/tess1o/go-tapo/api/types"
+	"github.com/tess1o/go-tapo/pkg/tapogo"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 	tapoConfigLocation   = "TAPO_CONFIG_LOCATION"
 	prometheusPort       = "8086"
 	metricPrefix         = "tapo"
-	fetchIntervalSeconds = 15
+	fetchIntervalSeconds = 3
 	maxRetries           = 5
 	delayBetweenRetries  = 2
 )
