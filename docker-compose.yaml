@@ -8,6 +8,9 @@ services:
       - prometheus_data:/prometheus
     expose:
       - 9090
+    networks:
+      - power
+      - metrics
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     restart: unless-stopped
@@ -17,11 +20,18 @@ services:
     build:
       context: .
     container_name: power_exporter
+    networks:
+      - power
     volumes:
       - ./config/tapo.json:/app/config.json:ro
     ports:
       - 8086:8086
     env_file: config/tapo.env
+
+networks:
+  power:
+  metrics:
+    external: true
 
 volumes:
   prometheus_data:
