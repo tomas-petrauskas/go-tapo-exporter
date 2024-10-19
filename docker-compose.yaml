@@ -24,8 +24,8 @@ services:
       - power
     volumes:
       - ./config/tapo.json:/app/config.json:ro
-    ports:
-      - 8086:8086
+    expose:
+      - 8086
     env_file: config/tapo.env
 
 networks:
