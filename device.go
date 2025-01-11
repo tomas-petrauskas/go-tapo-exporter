@@ -2,24 +2,30 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/tess1o/go-tapo/pkg/tapogo"
+	"github.com/tess1o/tapo-go"
 )
 
-type Config struct {
-	Devices []Device `json:"devices"`
+type Devices struct {
+	SmartPlugs []SmartPlug `json:"smart_plugs"`
+	TSeries    []TSeries   `json:"t_series"`
 }
 
-type Device struct {
-	Name      string       `json:"name"`
-	IPAddress string       `json:"ip_address"`
-	Client    *tapogo.Tapo `json:"-"`
+type SmartPlug struct {
+	Name   string          `json:"name"`
+	Host   string          `json:"host"`
+	Client *tapo.SmartPlug `json:"-"`
 }
 
-func ReadDevices(configData []byte) ([]Device, error) {
-	var config Config
-	err := json.Unmarshal(configData, &config)
+type TSeries struct {
+	HubHost string        `json:"hub_host"`
+	Client  *tapo.TSeries `json:"-"`
+}
+
+func ReadDevices(configData []byte) (*Devices, error) {
+	var devices *Devices
+	err := json.Unmarshal(configData, &devices)
 	if err != nil {
 		return nil, err
 	}
-	return config.Devices, nil
+	return devices, nil
 }

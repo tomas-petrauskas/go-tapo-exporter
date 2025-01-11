@@ -1,12 +1,17 @@
 {
-  "devices": [
+  "smart_plugs": [
     {
       "name": "Fridge",
-      "ip_address": "192.168.50.50"
+      "host": "192.168.50.51"
     },
     {
       "name": "Gas Boiler",
-      "ip_address":  "192.168.50.51"
+      "host": "192.168.50.52"
+    }
+  ],
+  "t_series": [
+    {
+      "hub_host": "192.168.50.164"
     }
   ]
 }
