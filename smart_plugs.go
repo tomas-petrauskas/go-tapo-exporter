@@ -5,12 +5,27 @@ import (
 	"encoding/json"
 	"github.com/tess1o/tapo-go"
 	"log/slog"
-	"time"
 )
 
-func initSmartPlugs(devices []SmartPlug, username string, password string) {
+type SmartPlug struct {
+	Name     string              `json:"name"`
+	Host     string              `json:"host"`
+	Client   *tapo.SmartPlug     `json:"-"`
+	Exporter *PrometheusExporter `json:"-"`
+	Username string              `json:"-"`
+	Password string              `json:"-"`
+}
+
+func (s SmartPlug) GetEnergyUsage() (*tapo.EnergyUsageResponse, error) {
+	return s.Client.GetEnergyUsage()
+}
+
+func initSmartPlugs(devices []*SmartPlug, username string, password string, exporter *PrometheusExporter) {
 	for i := range devices {
-		client, err := initSmartPlugClient(devices[i].Host, username, password)
+		devices[i].Exporter = exporter
+		devices[i].Username = username
+		devices[i].Password = password
+		client, err := initSmartPlugClient(devices[i])
 		if err != nil {
 			slog.Error("Failed to create Tapo client", "error", err, "device", devices[i].Name)
 			continue
@@ -19,45 +34,36 @@ func initSmartPlugs(devices []SmartPlug, username string, password string) {
 	}
 }
 
-func initSmartPlugClient(host, username, password string) (*tapo.SmartPlug, error) {
-	return tapo.NewSmartPlug(host, username, password, tapo.Options{})
+func initSmartPlugClient(plug *SmartPlug) (*tapo.SmartPlug, error) {
+	slog.Info("Creating Tapo client", "host", plug.Host)
+	return tapo.NewSmartPlug(plug.Host, plug.Username, plug.Password, tapo.Options{
+		RetryConfig: tapo.DefaultRetryConfig,
+	})
 }
 
-func handleSmartPlug(device SmartPlug, username string, password string, exporter *PrometheusExporter) {
+func handleSmartPlug(device *SmartPlug) {
 	if device.Client == nil {
-		client, err := initSmartPlugClient(device.Host, username, password)
+		client, err := initSmartPlugClient(device)
 		if err != nil {
 			slog.Error("Failed to create Tapo client", "error", err, "device", device.Name)
 			return
 		}
 		device.Client = client
 	}
-	r, err := getEnergyUsage(device)
+	r, err := device.GetEnergyUsage()
 	if err != nil {
 		slog.Error("Error getting energy usage", "device", device.Name, "error", err)
+		client, initErr := initSmartPlugClient(device)
+		if initErr != nil {
+			slog.Error("Failed to create Tapo client", "error", initErr, "device", device.Name)
+			return
+		}
+		device.Client = client
 	} else {
 		slog.Info("Successfully received metrics", "device", device.Name)
 		d, _ := json.Marshal(r.Result)
 		var params map[string]interface{}
 		json.Unmarshal(d, &params)
-		exporter.HandleSmartPlug(context.Background(), device, params)
+		device.Exporter.HandleSmartPlug(context.Background(), device, params)
 	}
-}
-
-func getEnergyUsage(device SmartPlug) (*tapo.EnergyUsageResponse, error) {
-	var energyUsageResponse *tapo.EnergyUsageResponse
-	var energyError error
-	for i := 0; i < maxRetries; i++ {
-		r, err := device.Client.GetEnergyUsage()
-		if err == nil {
-			energyUsageResponse = r
-			break
-		} else {
-			energyError = err
-			slog.Error("Error getting energy usage", "attempt", i+1, "device", device.Name, "error", energyError)
-			time.Sleep(time.Second * delayBetweenRetries)
-		}
-	}
-
-	return energyUsageResponse, energyError
 }

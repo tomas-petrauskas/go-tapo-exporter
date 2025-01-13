@@ -2,16 +2,16 @@
   "smart_plugs": [
     {
       "name": "Fridge",
-      "host": "192.168.50.51"
+      "host": "192.168.1.2"
     },
     {
       "name": "Gas Boiler",
-      "host": "192.168.50.52"
+      "host": "192.168.1.3"
     }
   ],
   "t_series": [
     {
-      "hub_host": "192.168.50.164"
+      "hub_host": "192.168.1.4"
     }
   ]
 }

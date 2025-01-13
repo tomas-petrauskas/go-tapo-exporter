@@ -6,41 +6,57 @@ import (
 	"log/slog"
 )
 
-func initTSeries(devices []TSeries, username string, password string) {
+type TSeries struct {
+	HubHost  string              `json:"hub_host"`
+	Client   *tapo.TSeries       `json:"-"`
+	Exporter *PrometheusExporter `json:"-"`
+	Username string              `json:"-"`
+	Password string              `json:"-"`
+}
+
+func initTSeries(devices []*TSeries, username string, password string, exporter *PrometheusExporter) {
 	for i := range devices {
-		client, err := initTSeriesClient(devices[i].HubHost, username, password)
+		devices[i].Exporter = exporter
+		devices[i].Username = username
+		devices[i].Password = password
+		err := initTSeriesClient(devices[i])
 		if err != nil {
 			slog.Error("Failed to create Tapo client", "error", err, "device", devices[i].HubHost)
 			continue
 		}
-		devices[i].Client = client
 	}
 }
 
-func initTSeriesClient(host, username, password string) (*tapo.TSeries, error) {
-	hub, err := tapo.NewHub(host, username, password, tapo.Options{})
+func initTSeriesClient(device *TSeries) error {
+	slog.Info("Creating Tapo client", "host", device.HubHost)
+	hub, err := tapo.NewHub(device.HubHost, device.Username, device.Password, tapo.Options{RetryConfig: tapo.DefaultRetryConfig})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return tapo.NewTSeriesDevices(hub), nil
+	tSeriesDevices := tapo.NewTSeriesDevices(hub)
+	device.Client = tSeriesDevices
+	return nil
 }
 
-func handleTSeries(devices TSeries, username string, password string, exporter *PrometheusExporter) {
+func handleTSeries(devices *TSeries) {
 	if devices.Client == nil {
-		client, err := initTSeriesClient(devices.HubHost, username, password)
+		err := initTSeriesClient(devices)
 		if err != nil {
 			slog.Error("Failed to create Tapo client", "error", err, "hub", devices.HubHost)
 			return
 		}
-		devices.Client = client
 	}
 	r, err := devices.Client.GetTSeriesDevices()
 	if err != nil {
-		slog.Error("Error getting t-series device parameters", "hub", devices.HubHost, "error", err)
+		slog.Error("Error getting t-series device parameters, will try to handshake again", "hub", devices.HubHost, "error", err)
+		initErr := initTSeriesClient(devices)
+		if initErr != nil {
+			slog.Error("Failed to reinitialize Tapo client", "error", initErr, "hub", devices.HubHost)
+			return
+		}
 	} else {
-		slog.Info("Successfully received metrics", "device", devices.HubHost)
 		for _, params := range r {
-			exporter.HandleTSeries(context.Background(), devices.HubHost, params)
+			devices.Exporter.HandleTSeries(context.Background(), devices.HubHost, params)
 		}
 	}
 }

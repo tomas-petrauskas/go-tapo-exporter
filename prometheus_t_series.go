@@ -6,6 +6,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/tess1o/tapo-go"
 	"log/slog"
+	"time"
 )
 
 func (p *PrometheusExporter) handleOneTSeriesMetric(deviceId string, key string, v float64, labels map[string]string) {
@@ -28,7 +29,7 @@ func (p *PrometheusExporter) handleOneTSeriesMetric(deviceId string, key string,
 }
 
 func (p *PrometheusExporter) HandleTSeries(_ context.Context, hubHost string, parameters tapo.TSeriesResponse) {
-	slog.Debug("Handling prometheus metrics for t-series device")
+	slog.Info("Handling prometheus metrics for t-series device", "device_id", parameters.DeviceId, "hub_host", hubHost, "nickname", p.getNickName(parameters))
 
 	labels := make(map[string]string)
 	labels["parent_device_id"] = parameters.ParentDeviceId
@@ -40,16 +41,28 @@ func (p *PrometheusExporter) HandleTSeries(_ context.Context, hubHost string, pa
 	labels["status"] = parameters.Status
 	labels["temp_unit"] = parameters.TempUnit
 	labels["hub_host"] = hubHost
-	labels["nickname"] = parameters.Nickname
-
-	nickname, err := base64.StdEncoding.DecodeString(parameters.Nickname)
-	if err != nil {
-		labels["nickname"] = parameters.Nickname
+	labels["nickname"] = p.getNickName(parameters)
+	labels["last_onboarding_timestamp"] = p.convertUnixTime(int64(parameters.LastOnboardingTimestamp))
+	if parameters.AtLowBattery {
+		labels["at_low_battery"] = "1"
 	} else {
-		labels["nickname"] = string(nickname)
+		labels["at_low_battery"] = "0"
 	}
 
-	p.handleOneTSeriesMetric(parameters.DeviceId, "lastOnboardingTimestamp", float64(parameters.LastOnboardingTimestamp), labels)
 	p.handleOneTSeriesMetric(parameters.DeviceId, "current_temp", parameters.CurrentTemp, labels)
 	p.handleOneTSeriesMetric(parameters.DeviceId, "current_humidity", float64(parameters.CurrentHumidity), labels)
+}
+
+func (p *PrometheusExporter) getNickName(parameters tapo.TSeriesResponse) string {
+	nickname, err := base64.StdEncoding.DecodeString(parameters.Nickname)
+	if err != nil {
+		return parameters.Nickname
+	} else {
+		return string(nickname)
+	}
+}
+
+func (p *PrometheusExporter) convertUnixTime(unixTime int64) string {
+	t := time.Unix(unixTime, 0)
+	return t.Format("2006-01-02 15:04:05")
 }

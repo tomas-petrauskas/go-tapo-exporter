@@ -1,7 +1,9 @@
 # Build app
 FROM golang:1.23-alpine AS build
 WORKDIR /app
+RUN apk add --no-cache git
 COPY . .
+RUN go clean -modcache && go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux go build -o tapo-exporter .
 
 # Final image

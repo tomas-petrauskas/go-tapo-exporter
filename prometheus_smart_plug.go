@@ -7,14 +7,14 @@ import (
 	"log/slog"
 )
 
-func (p *PrometheusExporter) HandleSmartPlug(_ context.Context, device SmartPlug, rawParameters map[string]interface{}) {
+func (p *PrometheusExporter) HandleSmartPlug(_ context.Context, device *SmartPlug, rawParameters map[string]interface{}) {
 	slog.Debug("Handling prometheus metrics for device", "sn", device.Name)
 	for field, val := range rawParameters {
 		p.handleOneMetricSmartPlug(device, field, val)
 	}
 }
 
-func (p *PrometheusExporter) handleOneMetricSmartPlug(device SmartPlug, field string, val interface{}) {
+func (p *PrometheusExporter) handleOneMetricSmartPlug(device *SmartPlug, field string, val interface{}) {
 	metricName := p.Config.Prefix + "_" + field
 	deviceMetricName := device.Host + "_" + metricName
 	p.mu.Lock()

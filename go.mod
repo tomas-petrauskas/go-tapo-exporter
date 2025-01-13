@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/prometheus/client_golang v1.20.4
-	github.com/tess1o/tapo-go v0.0.3
+	github.com/tess1o/tapo-go v0.0.5
 )
 
 require (

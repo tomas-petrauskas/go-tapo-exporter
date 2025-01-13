@@ -2,10 +2,16 @@
 
 ## Description
 
-This is an TP-Link Tapo P110 Prometheus exporter written in Go. It collects the data from P110 devices and sends them to
-Prometheus, where they can be visualized in Grafana.
+This is an TP-Link Tapo P110 and Tapo H200 Prometheus exporter written in Go. It collects the data from P110 devices as
+well as H200 hub (and connected devices) and sends them to Prometheus, where they can be visualized in Grafana.
 
-This exporter handles 403 errors that are randomly are received from P110 devices.
+Currently supported and tested:
+
+1. P110
+2. H200 hub with T310 and T315 sensors (temperature + humidity)
+
+Other devices that are connected to H200 hub can be supported, however I don't have any (expect T310 and T315) so will
+need additional help from the community.
 
 ### Dashboard
 
@@ -39,30 +45,46 @@ Here is an example how I did it using ASUS router.
 2. Configure port forwarding from external PORT (let's say `9876` to `192.168.50.50:80`
    ![port_forwarding.png](img/port_forwarding.png)
 3. Configure DDNS in your ASUS router (I assume other routers supports similar feature) so we have a dedicated hostname
-   attached to our router. Can be skipped if you have static IP address from your provider. Let's say it's `example.asuscomm.com`
+   attached to our router. Can be skipped if you have static IP address from your provider. Let's say it's
+   `example.asuscomm.com`
 4. Now in `config.json` (see step #3 from installation instruction) you can use:
 
 ```json
 {
-  "devices": [
+  "smart_plugs": [
     {
       "name": "Fridge",
-      "ip_address": "example.asuscomm.com:9876"
+      "host": "example.asuscomm.com:9876"
+    }
+  ],
+  "t_series": [
+    {
+      "hub_host": "example.asuscomm.com:8987"
     }
   ]
 }
+
 ```
+
 (pay attention I set port which we configured in step#2)
 
-instead of 
+instead of
+
 ```json
 {
-  "devices": [
+  "smart_plugs": [
     {
       "name": "Fridge",
-      "ip_address": "192.168.50.50"
+      "host": "192.168.50.50"
+    }
+  ],
+  "t_series": [
+    {
+      "hub_host": "192.168.1.4"
     }
   ]
 }
+
 ```
+
 5. Deploy everything on external VPS.

@@ -13,9 +13,7 @@ const (
 	tapoConfigLocation   = "TAPO_CONFIG_LOCATION"
 	prometheusPort       = "8086"
 	metricPrefix         = "tapo"
-	fetchIntervalSeconds = 15
-	maxRetries           = 5
-	delayBetweenRetries  = 2
+	fetchIntervalSeconds = 30
 )
 
 func main() {
@@ -35,9 +33,6 @@ func main() {
 		return
 	}
 
-	initSmartPlugs(devices.SmartPlugs, username, password)
-	initTSeries(devices.TSeries, username, password)
-
 	config := PrometheusConfig{
 		ServerPort: prometheusPort,
 		Prefix:     metricPrefix,
@@ -45,13 +40,16 @@ func main() {
 	}
 	exporter := NewPrometheusExporter(&config)
 
+	initSmartPlugs(devices.SmartPlugs, username, password, exporter)
+	initTSeries(devices.TSeries, username, password, exporter)
+
 	ticker := time.NewTicker(fetchIntervalSeconds * time.Second)
 	for _ = time.Now(); ; _ = <-ticker.C {
 		for _, device := range devices.SmartPlugs {
-			go handleSmartPlug(device, username, password, exporter)
+			go handleSmartPlug(device)
 		}
 		for _, device := range devices.TSeries {
-			go handleTSeries(device, username, password, exporter)
+			go handleTSeries(device)
 		}
 	}
 }
