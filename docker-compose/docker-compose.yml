@@ -21,7 +21,7 @@ services:
       - tapo
 
   go-tapo-exporter:
-    image: tess1o/go-tapo-exporter:latest-amd64
+    image: tess1o/go-tapo-exporter:latest
     container_name: go_tapo_exporter
     volumes:
       - ./config.json:/app/config.json:ro

@@ -21,11 +21,84 @@ need additional help from the community.
 
 1. `cd docker-compose`
 2. Update `TAPO_EMAIL` and `TAPO_PASSWORD` in `docker-compose.yml` or use environment variables (preferable)
-3. Update `config.json` and add P110 devices with meaningful names and their IP addresses (or host:port, see below how
+3. Update `config.json` and add P110 devices and/or H200 hub with meaningful names and their IP addresses (or host:port, see below how
    to configure everything to work via Internet)
 4. Run `docker compose up` or `docker compose up -d`
 
 The exporter is running on port 8086, Prometheus on port 9090 and Grafana on port 3000.
+
+## Installation without Prometheus and Grafana via docker-compose
+
+1. Create `config.json` in current directory with content (update it as per your devices and hosts)
+
+```json
+{
+  "smart_plugs": [
+    {
+      "name": "Fridge",
+      "host": "192.168.1.2"
+    },
+    {
+      "name": "Gas Boiler",
+      "host": "192.168.1.3"
+    }
+  ],
+  "t_series": [
+    {
+      "hub_host": "192.168.1.4"
+    }
+  ]
+}
+
+```
+
+2. Create docker-compose.yaml file (update email and password)
+
+```yaml
+services:
+  go-tapo-exporter:
+    image: tess1o/go-tapo-exporter:latest
+    container_name: go_tapo_exporter
+    volumes:
+      - ./config.json:/app/config.json:ro
+    ports:
+      - 8086:8086
+    environment:
+      - TAPO_EMAIL=CHANGE_ME
+      - TAPO_PASSWORD=CHANGE_ME
+      - TAPO_CONFIG_LOCATION=/app/config.json
+```
+
+3. Run `docker compoe -f docker-compose.yaml up -d`
+
+## Installation without Prometheus and Grafana via docker run
+
+1. Create `config.json` in current directory with content (update it as per your devices and hosts)
+
+```json
+{
+  "smart_plugs": [
+    {
+      "name": "Fridge",
+      "host": "192.168.1.2"
+    },
+    {
+      "name": "Gas Boiler",
+      "host": "192.168.1.3"
+    }
+  ],
+  "t_series": [
+    {
+      "hub_host": "192.168.1.4"
+    }
+  ]
+}
+
+```
+
+2. Run docker run command (update email and password)
+
+`docker run -d --name go_tapo_exporter -v ./config.json:/app/config.json:ro -p 8086:8086 -e TAPO_EMAIL=CHANGE_ME -e TAPO_PASSWORD=CHANGE_ME -e TAPO_CONFIG_LOCATION=/app/config.json tess1o/go-tapo-exporter:latest`
 
 Go to Grafana (http://localhost:3000, admin/admin), configure `Prometheus` datasource (url should
 be http://prometheus:9000).
