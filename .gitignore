@@ -1,3 +1,4 @@
+prometheus_data/
 /docker-compose/.env
 /go-tapo-exporter.iml
 /.idea/misc.xml

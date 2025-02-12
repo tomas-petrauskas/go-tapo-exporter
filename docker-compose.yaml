@@ -6,13 +6,14 @@ services:
     restart: unless-stopped
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ./prometheus_data:/prometheus
     expose:
       - 9090
     networks:
       - power
       - metrics
     command:
+      - '--storage.tsdb.retention.time=365d'
       - '--config.file=/etc/prometheus/prometheus.yml'
 
   exporter:
@@ -33,6 +34,3 @@ networks:
   power:
   metrics:
     external: true
-
-volumes:
-  prometheus_data:
