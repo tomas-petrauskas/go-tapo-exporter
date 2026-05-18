@@ -29,7 +29,7 @@ func initTSeries(devices []*TSeries, username string, password string, exporter 
 
 func initTSeriesClient(device *TSeries) error {
 	slog.Info("Creating Tapo client", "host", device.HubHost)
-	hub, err := tapo.NewHub(device.HubHost, device.Username, device.Password, tapo.Options{RetryConfig: tapo.DefaultRetryConfig})
+	hub, err := tapo.NewHub(context.Background(), device.HubHost, device.Username, device.Password, tapo.Options{RetryConfig: tapo.DefaultRetryConfig})
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func handleTSeries(devices *TSeries) {
 			return
 		}
 	}
-	r, err := devices.Client.GetTSeriesDevices()
+	r, err := devices.Client.GetTSeriesDevices(context.Background())
 	if err != nil {
 		slog.Error("Error getting t-series device parameters, will try to handshake again", "hub", devices.HubHost, "error", err)
 		initErr := initTSeriesClient(devices)

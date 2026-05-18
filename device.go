@@ -5,8 +5,9 @@ import (
 )
 
 type Devices struct {
-	SmartPlugs []*SmartPlug `json:"smart_plugs"`
-	TSeries    []*TSeries   `json:"t_series"`
+	SmartPlugs  []*SmartPlug  `json:"smart_plugs"`
+	TSeries     []*TSeries    `json:"t_series"`
+	PowerStrips []*PowerStrip `json:"power_strips"`
 }
 
 func ReadDevices(configData []byte) (*Devices, error) {
