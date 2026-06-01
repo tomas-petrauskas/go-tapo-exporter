@@ -4,7 +4,7 @@ go 1.23.1
 
 require (
 	github.com/prometheus/client_golang v1.20.4
-	github.com/tess1o/tapo-go v0.0.0-20260518095323-0569b853c7c1
+	github.com/tess1o/tapo-go v0.2.0
 )
 
 require (
@@ -19,5 +19,3 @@ require (
 	golang.org/x/sys v0.22.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )
-
-replace github.com/tess1o/tapo-go => github.com/holmesb/tapo-go v0.0.0-20260518095323-0569b853c7c1
