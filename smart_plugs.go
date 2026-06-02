@@ -17,7 +17,7 @@ type SmartPlug struct {
 }
 
 func (s SmartPlug) GetEnergyUsage() (*tapo.EnergyUsageResponse, error) {
-	return s.Client.GetEnergyUsage()
+	return s.Client.GetEnergyUsage(context.Background())
 }
 
 func initSmartPlugs(devices []*SmartPlug, username string, password string, exporter *PrometheusExporter) {
@@ -36,7 +36,7 @@ func initSmartPlugs(devices []*SmartPlug, username string, password string, expo
 
 func initSmartPlugClient(plug *SmartPlug) (*tapo.SmartPlug, error) {
 	slog.Info("Creating Tapo client", "host", plug.Host)
-	return tapo.NewSmartPlug(plug.Host, plug.Username, plug.Password, tapo.Options{
+	return tapo.NewSmartPlug(context.Background(), plug.Host, plug.Username, plug.Password, tapo.Options{
 		RetryConfig: tapo.DefaultRetryConfig,
 	})
 }

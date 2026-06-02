@@ -42,6 +42,7 @@ func main() {
 
 	initSmartPlugs(devices.SmartPlugs, username, password, exporter)
 	initTSeries(devices.TSeries, username, password, exporter)
+	initPowerStrips(devices.PowerStrips, username, password, exporter)
 
 	ticker := time.NewTicker(fetchIntervalSeconds * time.Second)
 	for _ = time.Now(); ; _ = <-ticker.C {
@@ -50,6 +51,9 @@ func main() {
 		}
 		for _, device := range devices.TSeries {
 			go handleTSeries(device)
+		}
+		for _, device := range devices.PowerStrips {
+			go handlePowerStrip(device)
 		}
 	}
 }
